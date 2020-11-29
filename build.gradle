@@ -44,11 +44,6 @@ version = "${config.modVersionMajor}.${config.modVersionMinor}.${config.modVersi
 group = "net.aeronica.modlibs.aguilib"
 archivesBaseName = "aguilib-${config.minecraftVersion}"
 
-configurations {
-    shadow
-    compile.extendsFrom shadow
-}
-
 minecraft {
     version = "${config.minecraftVersion}-${config.forgeVersion}"
     runDir = "${config.runDir}"
