@@ -1,0 +1,154 @@
+
+// For those who want the bleeding edge
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "https://files.minecraftforge.net/maven"
+		}	
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+		classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.0'
+    }
+}
+
+plugins {
+    id "org.sonarqube" version "3.0"
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'java'
+
+sourceCompatibility = targetCompatibility = "1.8"
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.8"
+}
+
+ext.buildProperties = file "build.properties"
+
+buildProperties.withReader {
+    def properties = new Properties()
+    properties.load(it)
+    ext.config = new ConfigSlurper().parse properties
+}
+
+repositories {
+    jcenter()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
+version = "${config.modVersionMajor}.${config.modVersionMinor}.${config.modVersionRev}-${config.versionType}.${config.typeVersion}"
+group = "net.aeronica.modlibs.aguilib"
+archivesBaseName = "aguilib-${config.minecraftVersion}"
+
+configurations {
+    shadow
+    compile.extendsFrom shadow
+}
+
+minecraft {
+    version = "${config.minecraftVersion}-${config.forgeVersion}"
+    runDir = "${config.runDir}"
+	mappings = "${config.forgeMappings}"
+    
+    replaceIn "net/aeronica/modlibs/aguilib/Reference.java"
+    replace "{@VERSION}", project.version
+}
+
+dependencies {
+
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:unchecked', '-Xlint:deprecation'])
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = "sources"
+    from sourceSets.main.allSource
+}
+
+task devJar(type: Jar) {
+    classifier = "dev"
+    from sourceSets.main.output
+    manifest {
+        attributes 'FMLAT': 'aguilib_at.cfg'
+    }
+}
+
+jar {
+    manifest {
+	    attributes 'FMLAT': 'aguilib_at.cfg'
+        attributes "Maven-Artifact": "${project.group}:${project.archivesBaseName}:${project.version}"
+        attributes "Timestamp": System.currentTimeMillis()
+	}
+}
+jar.enabled = true
+
+processResources {
+    // Exclude the GIMP image files
+    exclude '**/*.xcf'
+
+    // Exclude the Cubik model files
+    exclude '**/*.bdc3D'
+
+    // Exclude the Paint.NET image files
+    exclude '**/*.pdn'
+    
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+    
+    rename '(.+_at.cfg)', 'META-INF/$1'
+}
+
+sonarqube {
+    properties {
+        property "sonar.organization", "aeronicamc"
+        property "sonar.projectKey", "AeronicaMC_aguilib"
+        property "sonar.branch.name", "main"
+        //property "sonar.branch.name", "${config.projectBranch}"
+        //property "sonar.coverage.exclusions", "**/*"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
+}
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    onlyIf {
+        project.hasProperty("keyStore")
+    }
+     
+    keyStore = project.findProperty('keyStore')
+    alias = project.findProperty('keyStoreAlias')
+    storePass = project.findProperty('keyStorePass')
+    keyPass = project.findProperty('keyStoreKeyPass')
+    inputFile = jar.archivePath
+    outputFile = jar.archivePath
+}
+
+artifacts {
+    archives sourcesJar
+    archives devJar
+}
+
+build {
+    dependsOn signJar
+}
+

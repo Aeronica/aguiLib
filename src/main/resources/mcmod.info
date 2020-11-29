@@ -1,0 +1,14 @@
+[
+{
+  "modid": "aguilib",
+  "name": "aguilib",
+  "description": "A GUI Library for modded Minecraft",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://minecraft.curseforge.com/projects/aguilib",
+  "authorList": ["Aeronica"],
+  "credits": "The Forge and FML guys, The LLibrary Team, The Modding Community",
+  "screenshots": [],
+  "dependencies": []
+}
+]
