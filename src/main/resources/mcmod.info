@@ -1,7 +1,7 @@
 [
 {
   "modid": "aguilib",
-  "name": "aguilib",
+  "name": "AGuiLib",
   "description": "A GUI Library for modded Minecraft",
   "version": "${version}",
   "mcversion": "${mcversion}",

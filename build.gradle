@@ -48,7 +48,8 @@ minecraft {
     version = "${config.minecraftVersion}-${config.forgeVersion}"
     runDir = "${config.runDir}"
 	mappings = "${config.forgeMappings}"
-    
+    makeObfSourceJar = false
+
     replaceIn "net/aeronica/modlibs/aguilib/Reference.java"
     replace "{@VERSION}", project.version
 }

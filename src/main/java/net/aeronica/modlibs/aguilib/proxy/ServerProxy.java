@@ -29,4 +29,9 @@ public class ServerProxy
     {
         return FMLServerHandler.instance().getServer().getWorld(dimension);
     }
+
+    public float getPartialTicks() {
+        return 0.0F;
+    }
+
 }
